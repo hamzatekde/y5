@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Gerçekçi Araba Oyunu</title>
+  <style>
+    body { margin: 0; overflow: hidden; }
+    canvas { display: block; background: #222; }
+  </style>
+</head>
+<body>
+<canvas id="gameCanvas"></canvas>
+
+<script>
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+let keys = {};
+window.addEventListener('keydown', (e) => keys[e.key] = true);
+window.addEventListener('keyup', (e) => keys[e.key] = false);
+
+class Car {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+    this.width = 50;
+    this.height = 100;
+    this.speed = 0;
+    this.acceleration = 0.2;
+    this.maxSpeed = 5;
+    this.friction = 0.05;
+    this.angle = 0;
+    this.turnSpeed = 0.03;
+  }
+
+  update() {
+    if (keys["ArrowUp"]) this.speed += this.acceleration;
+    if (keys["ArrowDown"]) this.speed -= this.acceleration;
+
+    if (this.speed > this.maxSpeed) this.speed = this.maxSpeed;
+    if (this.speed < -this.maxSpeed / 2) this.speed = -this.maxSpeed / 2;
+
+    if (this.speed > 0) this.speed -= this.friction;
+    if (this.speed < 0) this.speed += this.friction;
+    if (Math.abs(this.speed) < this.friction) this.speed = 0;
+
+    if (this.speed !== 0) {
+      const flip = this.speed > 0 ? 1 : -1;
+      if (keys["ArrowLeft"]) this.angle -= this.turnSpeed * flip;
+      if (keys["ArrowRight"]) this.angle += this.turnSpeed * flip;
+    }
+
+    this.x -= Math.sin(this.angle) * this.speed;
+    this.y -= Math.cos(this.angle) * this.speed;
+  }
+
+  draw(ctx) {
+    ctx.save();
+    ctx.translate(this.x, this.y);
+    ctx.rotate(this.angle);
+    ctx.fillStyle = "red";
+    ctx.fillRect(-this.width/2, -this.height/2, this.width, this.height);
+    ctx.restore();
+  }
+}
+
+const car = new Car(canvas.width / 2, canvas.height / 2);
+
+function animate() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  car.update();
+  car.draw(ctx);
+
+  requestAnimationFrame(animate);
+}
+
+animate();
+</script>
+</body>
+</html>
